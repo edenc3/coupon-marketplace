@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProductType {
+  COUPON
+}
+
+enum ValueType {
+  STRING
+  IMAGE
+}
+
+model Product {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String?
+  type        ProductType
+  image_url   String
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  coupon      Coupon?
+
+  @@map("products")
+}
+
+model Coupon {
+  id                 String    @id @db.Uuid
+  cost_price         Decimal   @db.Decimal(10, 2)
+  margin_percentage  Decimal   @db.Decimal(5, 2)
+  minimum_sell_price Decimal   @db.Decimal(10, 2)
+  value_type         ValueType
+  value              String
+  is_sold            Boolean   @default(false)
+  product            Product   @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  @@map("coupons")
+}
