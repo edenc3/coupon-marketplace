@@ -82,10 +82,23 @@ async function deleteProduct(id) {
   return repo.deleteProduct(id);
 }
 
+async function getAllProductsPublic() {
+  return repo.findAllPublic();
+}
+
+async function getProductByIdPublic(id) {
+  assertValidId(id);
+  const product = await repo.findByIdPublic(id);
+  if (!product) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
+  return product;
+}
+
 module.exports = {
   createCoupon,
   updateCoupon,
   getAllProductsAdmin,
   getProductByIdAdmin,
   deleteProduct,
+  getAllProductsPublic,
+  getProductByIdPublic,
 };

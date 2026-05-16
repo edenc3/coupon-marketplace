@@ -64,4 +64,43 @@ async function deleteProduct(id) {
   return prisma.product.delete({ where: { id } });
 }
 
-module.exports = { createProduct, findAllAdmin, findByIdAdmin, updateProduct, deleteProduct };
+const PUBLIC_COUPON_SELECT = {
+  id: true,
+  name: true,
+  description: true,
+  type: true,
+  image_url: true,
+  created_at: true,
+  updated_at: true,
+  coupon: {
+    select: {
+      minimum_sell_price: true,
+      is_sold: true,
+    },
+  },
+};
+
+async function findAllPublic() {
+  return prisma.product.findMany({
+    where: { coupon: { is_sold: false } },
+    select: PUBLIC_COUPON_SELECT,
+    orderBy: { created_at: 'desc' },
+  });
+}
+
+async function findByIdPublic(id) {
+  return prisma.product.findFirst({
+    where: { id, coupon: { is_sold: false } },
+    select: PUBLIC_COUPON_SELECT,
+  });
+}
+
+module.exports = {
+  createProduct,
+  findAllAdmin,
+  findByIdAdmin,
+  updateProduct,
+  deleteProduct,
+  findAllPublic,
+  findByIdPublic,
+};
