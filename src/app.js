@@ -5,6 +5,7 @@ const path = require('path');
 
 const adminRoutes = require('./routes/admin.routes');
 const resellerRoutes = require('./routes/reseller.routes');
+const { globalErrorHandler } = require('./middleware/error.middleware');
 
 const app = express();
 
@@ -17,5 +18,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/v1', resellerRoutes);
+
+app.use(globalErrorHandler);
 
 module.exports = app;
