@@ -43,4 +43,31 @@ async function resellerPurchase(productId, body) {
   });
 }
 
-module.exports = { resellerPurchase };
+async function directPurchase(productId) {
+  if (!isUuid(productId)) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
+
+  return prisma.$transaction(async (tx) => {
+    const rows = await tx.$queryRaw`
+      SELECT id, minimum_sell_price, is_sold, value, value_type
+      FROM coupons
+      WHERE id = ${productId}::uuid
+      FOR UPDATE
+    `;
+
+    if (!rows.length) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
+    const coupon = rows[0];
+
+    if (coupon.is_sold) throw createAppError('PRODUCT_ALREADY_SOLD', 'Product already sold');
+
+    await tx.coupon.update({ where: { id: productId }, data: { is_sold: true } });
+
+    return {
+      product_id: productId,
+      final_price: Number(coupon.minimum_sell_price),
+      value_type: coupon.value_type,
+      value: coupon.value,
+    };
+  });
+}
+
+module.exports = { resellerPurchase, directPurchase };

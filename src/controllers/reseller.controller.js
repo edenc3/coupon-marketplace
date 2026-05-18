@@ -31,4 +31,13 @@ async function purchaseProduct(req, res) {
   }
 }
 
-module.exports = { listProducts, getProduct, purchaseProduct };
+async function purchaseDirect(req, res) {
+  try {
+    const result = await purchaseService.directPurchase(req.params.id);
+    res.json(result);
+  } catch (err) {
+    sendError(res, err);
+  }
+}
+
+module.exports = { listProducts, getProduct, purchaseProduct, purchaseDirect };
