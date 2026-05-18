@@ -2,8 +2,11 @@
 
 const { Router } = require('express');
 const ctrl = require('../controllers/admin.controller');
+const { adminAuth } = require('../middleware/auth.middleware');
 
 const router = Router();
+
+router.use(adminAuth);
 
 router.get('/products', ctrl.listProducts);
 router.get('/products/:id', ctrl.getProduct);

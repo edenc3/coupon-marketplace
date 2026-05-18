@@ -75,7 +75,6 @@ const PUBLIC_COUPON_SELECT = {
   coupon: {
     select: {
       minimum_sell_price: true,
-      is_sold: true,
     },
   },
 };

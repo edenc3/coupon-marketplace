@@ -6,10 +6,8 @@ const { resellerAuth } = require('../middleware/auth.middleware');
 
 const router = Router();
 
-router.use(resellerAuth);
-
 router.get('/products', ctrl.listProducts);
 router.get('/products/:id', ctrl.getProduct);
-router.post('/products/:id/purchase', ctrl.purchaseProduct);
+router.post('/products/:id/purchase', resellerAuth, ctrl.purchaseProduct);
 
 module.exports = router;
