@@ -110,7 +110,7 @@
       const editId = document.getElementById('edit-id').value;
       const body = {
         name:               document.getElementById('f-name').value,
-        description:        document.getElementById('f-description').value || undefined,
+        description:        document.getElementById('f-description').value || null,
         image_url:          document.getElementById('f-image_url').value,
         cost_price:         parseFloat(document.getElementById('f-cost_price').value),
         margin_percentage:  parseFloat(document.getElementById('f-margin_percentage').value),
