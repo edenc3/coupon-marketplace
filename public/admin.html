@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CouponMarket Admin</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="admin">
+  <header>
+    <h1>CouponMarket Admin</h1>
+    <div class="token-row">
+      <label>Admin Token <input type="password" id="admin-token" placeholder="Bearer token" /></label>
+      <button onclick="loadProducts()">Load</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="form-section">
+      <h2 id="form-title">Create Coupon</h2>
+      <form id="coupon-form">
+        <input type="hidden" id="edit-id" />
+        <div class="form-grid">
+          <label>Name         <input type="text"   id="f-name"               required /></label>
+          <label>Description  <input type="text"   id="f-description" /></label>
+          <label>Image URL    <input type="url"    id="f-image_url"          required /></label>
+          <label>Cost Price   <input type="number" id="f-cost_price"    step="0.01" min="0" required /></label>
+          <label>Margin %     <input type="number" id="f-margin_percentage" step="0.01" min="0" required /></label>
+          <label>Value Type
+            <select id="f-value_type">
+              <option value="STRING">STRING</option>
+              <option value="IMAGE">IMAGE</option>
+            </select>
+          </label>
+          <label>Value        <input type="text"   id="f-value"             required /></label>
+        </div>
+        <div class="form-actions">
+          <button type="submit" id="submit-btn">Create</button>
+          <button type="button" id="cancel-btn" class="hidden" onclick="resetForm()">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section>
+      <h2>All Products</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th><th>Cost</th><th>Margin %</th><th>Min Price</th>
+              <th>Value Type</th><th>Sold</th><th>Created</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="products-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let products = [];
+
+    const token = () => document.getElementById('admin-token').value;
+    const authHeaders = () => ({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token()}`,
+    });
+
+    async function loadProducts() {
+      const tbody = document.getElementById('products-body');
+      try {
+        const res = await fetch('/api/admin/products', { headers: authHeaders() });
+        const data = await res.json();
+        if (!res.ok) {
+          tbody.innerHTML = `<tr><td colspan="8" class="error">${data.message}</td></tr>`;
+          return;
+        }
+        products = data;
+        renderTable();
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="8" class="error">Failed to load products.</td></tr>';
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('products-body');
+      if (!products.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty">No products yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = products.map((p, i) => `
+        <tr>
+          <td>${p.name}</td>
+          <td>$${Number(p.coupon.cost_price).toFixed(2)}</td>
+          <td>${Number(p.coupon.margin_percentage).toFixed(2)}%</td>
+          <td>$${Number(p.coupon.minimum_sell_price).toFixed(2)}</td>
+          <td>${p.coupon.value_type}</td>
+          <td class="${p.coupon.is_sold ? 'sold' : ''}">${p.coupon.is_sold ? 'Yes' : 'No'}</td>
+          <td>${new Date(p.created_at).toLocaleDateString()}</td>
+          <td>
+            <button onclick="editProduct(${i})">Edit</button>
+            <button class="danger" onclick="deleteProduct('${p.id}')">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('coupon-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('edit-id').value;
+      const body = {
+        name:               document.getElementById('f-name').value,
+        description:        document.getElementById('f-description').value || undefined,
+        image_url:          document.getElementById('f-image_url').value,
+        cost_price:         parseFloat(document.getElementById('f-cost_price').value),
+        margin_percentage:  parseFloat(document.getElementById('f-margin_percentage').value),
+        value_type:         document.getElementById('f-value_type').value,
+        value:              document.getElementById('f-value').value,
+      };
+
+      const url    = editId ? `/api/admin/products/${editId}` : '/api/admin/products';
+      const method = editId ? 'PATCH' : 'POST';
+
+      try {
+        const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) { alert(data.message); return; }
+        resetForm();
+        loadProducts();
+      } catch {
+        alert('Request failed. Please try again.');
+      }
+    });
+
+    function editProduct(i) {
+      const p = products[i];
+      document.getElementById('edit-id').value              = p.id;
+      document.getElementById('f-name').value               = p.name;
+      document.getElementById('f-description').value        = p.description || '';
+      document.getElementById('f-image_url').value          = p.image_url;
+      document.getElementById('f-cost_price').value         = Number(p.coupon.cost_price);
+      document.getElementById('f-margin_percentage').value  = Number(p.coupon.margin_percentage);
+      document.getElementById('f-value_type').value         = p.coupon.value_type;
+      document.getElementById('f-value').value              = p.coupon.value;
+      document.getElementById('form-title').textContent     = 'Edit Coupon';
+      document.getElementById('submit-btn').textContent     = 'Update';
+      document.getElementById('cancel-btn').classList.remove('hidden');
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      try {
+        const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE', headers: authHeaders() });
+        if (res.ok) loadProducts();
+        else alert('Delete failed');
+      } catch {
+        alert('Request failed.');
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('edit-id').value = '';
+      document.getElementById('coupon-form').reset();
+      document.getElementById('form-title').textContent = 'Create Coupon';
+      document.getElementById('submit-btn').textContent = 'Create';
+      document.getElementById('cancel-btn').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

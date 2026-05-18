@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CouponMarket</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>CouponMarket</h1>
+    <p>Browse and buy digital coupons instantly</p>
+  </header>
+
+  <main>
+    <div id="products" class="grid"></div>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Purchase Successful!</h2>
+      <p class="modal-label">Your coupon value:</p>
+      <div id="modal-value" class="coupon-value"></div>
+      <button onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    async function loadProducts() {
+      const grid = document.getElementById('products');
+      try {
+        const res = await fetch('/api/v1/products');
+        const data = await res.json();
+        if (!data.length) {
+          grid.innerHTML = '<p class="empty">No products available.</p>';
+          return;
+        }
+        grid.innerHTML = data.map(p => `
+          <div class="card">
+            <img src="${p.image_url}" alt="${p.name}" onerror="this.src='https://placehold.co/300x200'" />
+            <div class="card-body">
+              <h3>${p.name}</h3>
+              <p>${p.description || ''}</p>
+              <div class="price">$${Number(p.coupon.minimum_sell_price).toFixed(2)}</div>
+              <button onclick="buy('${p.id}', this)">Buy Now</button>
+            </div>
+          </div>
+        `).join('');
+      } catch {
+        grid.innerHTML = '<p class="error">Failed to load products.</p>';
+      }
+    }
+
+    async function buy(id, btn) {
+      btn.disabled = true;
+      btn.textContent = 'Processing…';
+      try {
+        const res = await fetch(`/api/v1/products/${id}/purchase/direct`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.message || 'Purchase failed');
+          btn.disabled = false;
+          btn.textContent = 'Buy Now';
+          return;
+        }
+        document.getElementById('modal-value').textContent = data.value;
+        document.getElementById('modal').classList.remove('hidden');
+        loadProducts();
+      } catch {
+        alert('Purchase failed. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Buy Now';
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('hidden');
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
