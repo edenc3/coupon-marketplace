@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: couponmarket
+      POSTGRES_USER: couponmarket
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U couponmarket"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://couponmarket:${DB_PASSWORD}@db:5432/couponmarket
+      RESELLER_API_TOKEN: ${RESELLER_API_TOKEN}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
