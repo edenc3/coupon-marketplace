@@ -75,7 +75,7 @@ async function getProductByIdAdmin(id) {
   return product;
 }
 
-async function deleteProduct(id) {
+async function deleteProductAdmin(id) {
   assertValidId(id);
   const existing = await repo.findByIdAdmin(id);
   if (!existing) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
@@ -98,7 +98,7 @@ module.exports = {
   updateCoupon,
   getAllProductsAdmin,
   getProductByIdAdmin,
-  deleteProduct,
+  deleteProductAdmin,
   getAllProductsPublic,
   getProductByIdPublic,
 };

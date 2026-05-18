@@ -41,7 +41,7 @@ async function updateProduct(req, res) {
 
 async function deleteProduct(req, res) {
   try {
-    await service.deleteProduct(req.params.id);
+    await service.deleteProductAdmin(req.params.id);
     res.status(204).send();
   } catch (err) {
     sendError(res, err);
