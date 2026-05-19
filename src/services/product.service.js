@@ -1,5 +1,3 @@
-'use strict';
-
 const Joi = require('joi');
 const { validate: isUuid } = require('uuid');
 
@@ -48,6 +46,7 @@ async function updateCoupon(id, body) {
 
   const existing = await repo.findByIdAdmin(id);
   if (!existing) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
+  if (existing.coupon?.is_sold) throw createAppError('PRODUCT_ALREADY_SOLD', 'Cannot update a product that has already been sold');
 
   const { cost_price, margin_percentage, ...rest } = value;
   const update = { ...rest };
@@ -79,6 +78,7 @@ async function deleteProductAdmin(id) {
   assertValidId(id);
   const existing = await repo.findByIdAdmin(id);
   if (!existing) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
+  if (existing.coupon?.is_sold) throw createAppError('PRODUCT_ALREADY_SOLD', 'Cannot delete a product that has already been sold');
   return repo.deleteProduct(id);
 }
 
