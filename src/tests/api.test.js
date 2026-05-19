@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../app');
 const prisma = require('../config/prisma');
 
-const ADMIN_TOKEN = 'admin_token';
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
 const ADMIN_AUTH = { Authorization: `Bearer ${ADMIN_TOKEN}` };
 
 // ─── helpers ────────────────────────────────────────────────────────────────
