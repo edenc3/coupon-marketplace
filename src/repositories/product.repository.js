@@ -1,5 +1,3 @@
-'use strict';
-
 const prisma = require('../config/prisma');
 
 async function createProduct(data) {

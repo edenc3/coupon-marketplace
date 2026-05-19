@@ -1,5 +1,3 @@
-'use strict';
-
 const STATUS_MAP = {
   PRODUCT_NOT_FOUND: 404,
   PRODUCT_ALREADY_SOLD: 409,

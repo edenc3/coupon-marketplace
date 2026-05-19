@@ -1,5 +1,3 @@
-'use strict';
-
 const { port } = require('./config/env');
 const app = require('./app');
 const prisma = require('./config/prisma');
