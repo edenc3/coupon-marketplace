@@ -19,4 +19,8 @@ function sendError(res, err) {
   res.status(status).json({ error_code, message: err.message });
 }
 
-module.exports = { createAppError, sendError };
+function asyncHandler(fn) {
+  return (req, res, next) => Promise.resolve(fn(req, res, next)).catch((err) => sendError(res, err));
+}
+
+module.exports = { createAppError, sendError, asyncHandler };

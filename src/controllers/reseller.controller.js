@@ -1,41 +1,25 @@
 const productService = require('../services/product.service');
 const purchaseService = require('../services/purchase.service');
-const { sendError } = require('../utils/errors');
+const { asyncHandler } = require('../utils/errors');
 
-async function listProducts(req, res) {
-  try {
-    const products = await productService.getAllProductsPublic();
-    res.json(products);
-  } catch (err) {
-    sendError(res, err);
-  }
-}
+const listProducts = asyncHandler(async (req, res) => {
+  const products = await productService.getAllProductsPublic();
+  res.json(products);
+});
 
-async function getProduct(req, res) {
-  try {
-    const product = await productService.getProductByIdPublic(req.params.id);
-    res.json(product);
-  } catch (err) {
-    sendError(res, err);
-  }
-}
+const getProduct = asyncHandler(async (req, res) => {
+  const product = await productService.getProductByIdPublic(req.params.id);
+  res.json(product);
+});
 
-async function purchaseProduct(req, res) {
-  try {
-    const result = await purchaseService.resellerPurchase(req.params.id, req.body, req.reseller.id);
-    res.json(result);
-  } catch (err) {
-    sendError(res, err);
-  }
-}
+const purchaseProduct = asyncHandler(async (req, res) => {
+  const result = await purchaseService.resellerPurchase(req.params.id, req.body, req.reseller.id);
+  res.json(result);
+});
 
-async function purchaseDirect(req, res) {
-  try {
-    const result = await purchaseService.directPurchase(req.params.id);
-    res.json(result);
-  } catch (err) {
-    sendError(res, err);
-  }
-}
+const purchaseDirect = asyncHandler(async (req, res) => {
+  const result = await purchaseService.directPurchase(req.params.id);
+  res.json(result);
+});
 
 module.exports = { listProducts, getProduct, purchaseProduct, purchaseDirect };
