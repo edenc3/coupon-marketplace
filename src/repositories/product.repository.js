@@ -43,7 +43,6 @@ async function updateProduct(id, data) {
     where: { id },
     data: {
       ...productFields,
-      ...(Object.keys(productFields).length > 0 && { updated_at: new Date() }),
       coupon: {
         update: {
           ...(cost_price !== undefined && { cost_price }),

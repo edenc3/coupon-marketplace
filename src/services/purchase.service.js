@@ -57,6 +57,8 @@ async function directPurchase(productId) {
   if (!coupon) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
   if (coupon.is_sold) throw createAppError('PRODUCT_ALREADY_SOLD', 'Product already sold');
 
+  const finalPrice = Number(coupon.minimum_sell_price);
+
   await prisma.$transaction(async (tx) => {
     const { count } = await tx.coupon.updateMany({
       where: { id: productId, is_sold: false },
@@ -66,13 +68,13 @@ async function directPurchase(productId) {
     if (count === 0) throw createAppError('PRODUCT_ALREADY_SOLD', 'Product already sold');
 
     await tx.purchase.create({
-      data: { coupon_id: productId, reseller_id: null, final_price: Number(coupon.minimum_sell_price) },
+      data: { coupon_id: productId, reseller_id: null, final_price: finalPrice },
     });
   });
 
   return {
     product_id: productId,
-    final_price: Number(coupon.minimum_sell_price),
+    final_price: finalPrice,
     value_type: coupon.value_type,
     value: coupon.value,
   };
