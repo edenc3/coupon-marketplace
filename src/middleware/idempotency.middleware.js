@@ -28,19 +28,23 @@ async function idempotency(req, res, next) {
   }
 
   const originalJson = res.json.bind(res);
-  res.json = function (body) {
+  res.json = async function (body) {
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      prisma.idempotencyRecord.create({
-        data: {
-          key,
-          method: req.method,
-          path: req.path,
-          body_hash: bodyHash,
-          response_status: res.statusCode,
-          response_body: body,
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        },
-      }).catch(err => console.error('idempotency record write failed', err));
+      try {
+        await prisma.idempotencyRecord.create({
+          data: {
+            key,
+            method: req.method,
+            path: req.path,
+            body_hash: bodyHash,
+            response_status: res.statusCode,
+            response_body: body,
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          },
+        });
+      } catch (err) {
+        console.error('idempotency record write failed', err);
+      }
     }
     return originalJson(body);
   };
