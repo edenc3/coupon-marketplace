@@ -1,5 +1,3 @@
-'use strict';
-
 const productService = require('../services/product.service');
 const purchaseService = require('../services/purchase.service');
 const { sendError } = require('../utils/errors');
@@ -24,7 +22,7 @@ async function getProduct(req, res) {
 
 async function purchaseProduct(req, res) {
   try {
-    const result = await purchaseService.resellerPurchase(req.params.id, req.body);
+    const result = await purchaseService.resellerPurchase(req.params.id, req.body, req.reseller.id);
     res.json(result);
   } catch (err) {
     sendError(res, err);
