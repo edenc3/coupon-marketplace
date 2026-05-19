@@ -29,6 +29,14 @@ function assertValidId(id) {
   if (!isUuid(id)) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
 }
 
+async function fetchUnsoldProductOrThrow(id) {
+  assertValidId(id);
+  const existing = await repo.findByIdAdmin(id);
+  if (!existing) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
+  if (existing.coupon?.is_sold) throw createAppError('PRODUCT_ALREADY_SOLD', 'Product has already been sold');
+  return existing;
+}
+
 async function createCoupon(body) {
   const { error, value } = createCouponSchema.validate(body);
   if (error) throw createAppError('VALIDATION_ERROR', error.details[0].message);
@@ -39,14 +47,10 @@ async function createCoupon(body) {
 }
 
 async function updateCoupon(id, body) {
-  assertValidId(id);
-
   const { error, value } = updateCouponSchema.validate(body);
   if (error) throw createAppError('VALIDATION_ERROR', error.details[0].message);
 
-  const existing = await repo.findByIdAdmin(id);
-  if (!existing) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
-  if (existing.coupon?.is_sold) throw createAppError('PRODUCT_ALREADY_SOLD', 'Product has already been sold');
+  const existing = await fetchUnsoldProductOrThrow(id);
 
   const { cost_price, margin_percentage, ...rest } = value;
   const update = { ...rest };
@@ -75,10 +79,7 @@ async function getProductByIdAdmin(id) {
 }
 
 async function deleteProductAdmin(id) {
-  assertValidId(id);
-  const existing = await repo.findByIdAdmin(id);
-  if (!existing) throw createAppError('PRODUCT_NOT_FOUND', 'Product not found');
-  if (existing.coupon?.is_sold) throw createAppError('PRODUCT_ALREADY_SOLD', 'Product has already been sold');
+  await fetchUnsoldProductOrThrow(id);
   return repo.deleteProduct(id);
 }
 
