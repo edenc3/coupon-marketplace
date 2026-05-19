@@ -16,6 +16,32 @@ enum ValueType {
   IMAGE
 }
 
+model IdempotencyRecord {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  key             String   @unique
+  method          String
+  path            String
+  body_hash       String
+  response_status Int
+  response_body   Json
+  expires_at      DateTime
+  created_at      DateTime @default(now())
+
+  @@map("idempotency_records")
+}
+
+model Reseller {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  token_hash String     @unique
+  is_active  Boolean    @default(true)
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  purchases  Purchase[]
+
+  @@map("resellers")
+}
+
 model Product {
   id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String
@@ -30,14 +56,28 @@ model Product {
 }
 
 model Coupon {
-  id                 String    @id @db.Uuid
-  cost_price         Decimal   @db.Decimal(10, 2)
-  margin_percentage  Decimal   @db.Decimal(5, 2)
-  minimum_sell_price Decimal   @db.Decimal(10, 2)
+  id                 String     @id @db.Uuid
+  cost_price         Decimal    @db.Decimal(10, 2)
+  margin_percentage  Decimal    @db.Decimal(5, 2)
+  minimum_sell_price Decimal    @db.Decimal(10, 2)
   value_type         ValueType
   value              String
-  is_sold            Boolean   @default(false)
-  product            Product   @relation(fields: [id], references: [id], onDelete: Cascade)
+  is_sold            Boolean    @default(false)
+  product            Product    @relation(fields: [id], references: [id], onDelete: Cascade)
+  purchase           Purchase?
 
   @@map("coupons")
+}
+
+model Purchase {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  coupon_id   String   @unique @db.Uuid
+  reseller_id String?  @db.Uuid
+  final_price Decimal  @db.Decimal(10, 2)
+  created_at  DateTime @default(now())
+
+  coupon      Coupon   @relation(fields: [coupon_id], references: [id])
+  reseller    Reseller? @relation(fields: [reseller_id], references: [id])
+
+  @@map("purchases")
 }
