@@ -4,6 +4,7 @@ const STATUS_MAP = {
   RESELLER_PRICE_TOO_LOW: 400,
   UNAUTHORIZED: 401,
   VALIDATION_ERROR: 422,
+  IDEMPOTENCY_KEY_REUSED: 422,
 };
 
 function createAppError(error_code, message) {
