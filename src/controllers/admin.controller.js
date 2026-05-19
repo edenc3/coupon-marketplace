@@ -1,6 +1,5 @@
-'use strict';
-
 const service = require('../services/product.service');
+const resellerService = require('../services/reseller.service');
 const { sendError } = require('../utils/errors');
 
 async function listProducts(req, res) {
@@ -48,4 +47,13 @@ async function deleteProduct(req, res) {
   }
 }
 
-module.exports = { listProducts, getProduct, createProduct, updateProduct, deleteProduct };
+async function createReseller(req, res) {
+  try {
+    const reseller = await resellerService.createReseller(req.body);
+    res.status(201).json(reseller);
+  } catch (err) {
+    sendError(res, err);
+  }
+}
+
+module.exports = { listProducts, getProduct, createProduct, updateProduct, deleteProduct, createReseller };
