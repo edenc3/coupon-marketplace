@@ -22,7 +22,6 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://couponmarket:${DB_PASSWORD}@db:5432/couponmarket
-      RESELLER_API_TOKEN: ${RESELLER_API_TOKEN}
       ADMIN_TOKEN: ${ADMIN_TOKEN}
       PORT: 3000
     ports:
