@@ -1,6 +1,6 @@
 # Coupon Marketplace API
 
-![CI](https://github.com/eden/assignment/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/edenc3/coupon-marketplace/actions/workflows/ci.yml/badge.svg)
 
 A REST API for managing and selling coupon products, with separate admin and reseller interfaces.
 
